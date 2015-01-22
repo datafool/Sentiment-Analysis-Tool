@@ -23,8 +23,6 @@ predict <- function(x, theta1, theta2)
 }
 
 
-  
-
 ### Reading Data
 load("./trainingMatrix_X.Rda")
 load("./trainingMatrix_y.Rda")
@@ -49,7 +47,6 @@ for (i in 1:m)
 
 }  
 
-
 #Delta1 = rep(0,nrow(theta1)*ncol(theta1), nrow = nrow(theta1))
 
 ## Loading initial value of parameters
@@ -71,7 +68,7 @@ theta2_v <- as.vector(theta2)
 theta_v <- c(theta1_v, theta2_v)
 #*0.000001
 
-### Implementing forward propogation
+
 x <- cBind(matrix(rep(1,m)), trainingData_X)
 #ir1 <- nnet(trainingData_X[1:100,],train_y[1:100,], size = 1, rang = 0.1, decay = 5e-4, maxit = 200)
 rm(trainingData_X)
@@ -83,6 +80,9 @@ i <- 1
 j <- 1
 alpha <- 0.00001
 predAccuracy <- 0
+### Implementing forward propogation, Backward Propogation for Calculation of Output, Cost Function
+### and Gradient
+### Dirty Implementation of Gradient Descent for Parameter Estimation
 while(predAccuracy < 0.97 & i < 5000)
    {
     z1 <- x%*%t(theta1)
@@ -96,7 +96,9 @@ while(predAccuracy < 0.97 & i < 5000)
     ### Calculating Cost for all training example
     cost[i] <- (1/m)*(sum(-train_y*log(h) - (1-train_y)*log(1-h)))
     
-        
+    ### Perturbing the learning rate 'alpha' in case it is caught in  local minima
+    ### Perturbation is performed 500 times
+    ### In case local minima is deep, it might not come out of it
     if(i!=1){
      if(cost[i-1] - cost[i] < 0.01) {
        if(j < 500){
@@ -120,6 +122,7 @@ while(predAccuracy < 0.97 & i < 5000)
     delta2 <- delta3%*%theta2*(a2*(1-a2))
     Delta2 <- (t(delta3)%*%a2)/m
     Delta1 <- (t(delta2[,2:ncol(delta2)])%*%a1)/m
+    ### Updating theta using Gradient Descent
     theta1 <- theta1 - alpha*Delta1
     theta2 <- theta2 - alpha*Delta2
     
